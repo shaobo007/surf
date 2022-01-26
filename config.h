@@ -7,6 +7,7 @@ static char *styledir       = "~/.config/surf/styles/";
 static char *certdir        = "~/.config/surf/certificates/";
 static char *cachedir       = "~/.cache/surf/cache/";
 static char *cookiefile     = "~/.cache/surf/cookies.txt";
+static char *searchurl      = "google.com/search?q=%s";
 
 /* Webkit default features */
 /* Highest priority value will be used.
@@ -76,6 +77,14 @@ static WebKitFindOptions findopts = WEBKIT_FIND_OPTIONS_CASE_INSENSITIVE |
         } \
 }
 
+#define SEARCH() { \
+        .v = (const char *[]){ "/bin/sh", "-c", \
+             "xprop -id $1 -f $2 8s -set $2 \"" \
+             "$(dmenu -p Search: -w $1 < /dev/null)\"", \
+             "surf-search", winid, "_SURF_SEARCH", NULL \
+        } \
+}
+
 /* DOWNLOAD(URI, referer) */
 #define DOWNLOAD(u, r) { \
         .v = (const char *[]){ "st", "-e", "/bin/sh", "-c",\
@@ -140,74 +149,75 @@ static SiteSpecific certs[] = {
  * edit the CLEANMASK() macro.
  */
 static Key keys[] = {
-	/* modifier              keyval          function    arg */
-	{ 0,                     GDK_KEY_g,      spawn,      SETPROP("_SURF_URI", "_SURF_GO", PROMPT_GO) },
-	{ 0,                     GDK_KEY_f,      spawn,      SETPROP("_SURF_FIND", "_SURF_FIND", PROMPT_FIND) },
-	{ 0,                     GDK_KEY_slash,  spawn,      SETPROP("_SURF_FIND", "_SURF_FIND", PROMPT_FIND) },
-	{ 0,                     GDK_KEY_m,      spawn,      BM_ADD("_SURF_URI") },
+	/* modifier              keyval          function            arg */
+	{ 0,                     GDK_KEY_g,      spawn,              SETPROP("_SURF_URI", "_SURF_GO", PROMPT_GO) },
+	{ 0,                     GDK_KEY_f,      spawn,              SETPROP("_SURF_FIND", "_SURF_FIND", PROMPT_FIND) },
+	{ 0,                     GDK_KEY_slash,  spawn,              SETPROP("_SURF_FIND", "_SURF_FIND", PROMPT_FIND) },
+	{ 0,                     GDK_KEY_s,      spawn,              SEARCH() },
+	{ 0,                     GDK_KEY_m,      spawn,              BM_ADD("_SURF_URI") },
 
-	{ 0,                     GDK_KEY_i,      insert,     { .i = 1 } },
-	{ 0,                     GDK_KEY_Escape, insert,     { .i = 0 } },
+	{ 0,                     GDK_KEY_i,      insert,             { .i = 1 } },
+	{ 0,                     GDK_KEY_Escape, insert,             { .i = 0 } },
 
-	{ 0,                     GDK_KEY_c,      stop,       { 0 } },
-	{ 0|GDK_SHIFT_MASK,			 GDK_KEY_q,	     quit,	     { 0 } },
+	{ 0,                     GDK_KEY_c,      stop,               { 0 } },
+	{ 0|GDK_SHIFT_MASK,			 GDK_KEY_q,	     quit,	             { 0 } },
 
-	{ MODKEY,                GDK_KEY_r,      reload,     { .i = 1 } },
-	{ 0,                     GDK_KEY_r,      reload,     { .i = 0 } },
+	{ MODKEY,                GDK_KEY_r,      reload,             { .i = 1 } },
+	{ 0,                     GDK_KEY_r,      reload,             { .i = 0 } },
 
-	{ 0,                     GDK_KEY_l,      navigate,   { .i = +1 } },
-	{ 0,                     GDK_KEY_h,      navigate,   { .i = -1 } },
+	{ 0,                     GDK_KEY_l,      navigate,           { .i = +1 } },
+	{ 0,                     GDK_KEY_h,      navigate,           { .i = -1 } },
 
 	/* vertical and horizontal scrolling, in viewport percentage */
-	{ 0,                     GDK_KEY_j,      scrollv,    { .i = +10 } },
-	{ 0,                     GDK_KEY_k,      scrollv,    { .i = -10 } },
-	{ 0,                     GDK_KEY_space,  scrollv,    { .i = +50 } },
-	{ 0,                     GDK_KEY_b,      scrollv,    { .i = -50 } },
-	{ 0,                     GDK_KEY_o,      scrollh,    { .i = +10 } },
-	{ 0,                     GDK_KEY_u,      scrollh,    { .i = -10 } },
+	{ 0,                     GDK_KEY_j,      scrollv,            { .i = +10 } },
+	{ 0,                     GDK_KEY_k,      scrollv,            { .i = -10 } },
+	{ 0,                     GDK_KEY_space,  scrollv,            { .i = +50 } },
+	{ 0,                     GDK_KEY_b,      scrollv,            { .i = -50 } },
+	{ 0,                     GDK_KEY_o,      scrollh,            { .i = +10 } },
+	{ 0,                     GDK_KEY_u,      scrollh,            { .i = -10 } },
 
 
-	{ 0|GDK_SHIFT_MASK,      GDK_KEY_j,      zoom,       { .i = -1 } },
-	{ 0|GDK_SHIFT_MASK,      GDK_KEY_k,      zoom,       { .i = +1 } },
-	{ 0|GDK_SHIFT_MASK,      GDK_KEY_q,      zoom,       { .i = 0  } },
-	{ 0,                     GDK_KEY_minus,  zoom,       { .i = -1 } },
-	{ 0|GDK_SHIFT_MASK,      GDK_KEY_plus,   zoom,       { .i = +1 } },
-	{ 0,                     GDK_KEY_equal,  zoom,       { .i = 0  } },
+	{ 0|GDK_SHIFT_MASK,      GDK_KEY_j,      zoom,               { .i = -1 } },
+	{ 0|GDK_SHIFT_MASK,      GDK_KEY_k,      zoom,               { .i = +1 } },
+	{ 0|GDK_SHIFT_MASK,      GDK_KEY_q,      zoom,               { .i = 0  } },
+	{ 0,                     GDK_KEY_minus,  zoom,               { .i = -1 } },
+	{ 0|GDK_SHIFT_MASK,      GDK_KEY_plus,   zoom,               { .i = +1 } },
+	{ 0,                     GDK_KEY_equal,  zoom,               { .i = 0  } },
 
-	{ 0,                     GDK_KEY_p,      clipboard,  { .i = 1 } },
-	{ 0,                     GDK_KEY_y,      clipboard,  { .i = 0 } },
+	{ 0,                     GDK_KEY_p,      clipboard,          { .i = 1 } },
+	{ 0,                     GDK_KEY_y,      clipboard,          { .i = 0 } },
 
-	{ 0,                     GDK_KEY_n,      find,       { .i = +1 } },
-	{ 0|GDK_SHIFT_MASK,      GDK_KEY_n,      find,       { .i = -1 } },
+	{ 0,                     GDK_KEY_n,      find,               { .i = +1 } },
+	{ 0|GDK_SHIFT_MASK,      GDK_KEY_n,      find,               { .i = -1 } },
 
-	{ MODKEY,                GDK_KEY_p,      print,      { 0 } },
-	{ MODKEY,                GDK_KEY_t,      showcert,   { 0 } },
+	{ MODKEY,                GDK_KEY_p,      print,              { 0 } },
+	{ MODKEY,                GDK_KEY_t,      showcert,           { 0 } },
 
 	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_a,      togglecookiepolicy, { 0 } },
-	{ 0,                     GDK_KEY_F11,    togglefullscreen, { 0 } },
-	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_o,      toggleinspector, { 0 } },
+	{ 0,                     GDK_KEY_F11,    togglefullscreen,   { 0 } },
+	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_o,      toggleinspector,    { 0 } },
 	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_e,      toggletitle,        { 0 } },
 
-	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_c,      toggle,     { .i = CaretBrowsing } },
-	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_f,      toggle,     { .i = FrameFlattening } },
-	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_g,      toggle,     { .i = Geolocation } },
-	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_s,      toggle,     { .i = JavaScript } },
-	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_i,      toggle,     { .i = LoadImages } },
-	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_b,      toggle,     { .i = ScrollBars } },
-	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_t,      toggle,     { .i = StrictTLS } },
-	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_m,      toggle,     { .i = Style } },
+	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_c,      toggle,             { .i = CaretBrowsing } },
+	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_f,      toggle,             { .i = FrameFlattening } },
+	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_g,      toggle,             { .i = Geolocation } },
+	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_s,      toggle,             { .i = JavaScript } },
+	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_i,      toggle,             { .i = LoadImages } },
+	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_b,      toggle,             { .i = ScrollBars } },
+	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_t,      toggle,             { .i = StrictTLS } },
+	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_m,      toggle,             { .i = Style } },
 };
 
 /* button definitions */
 /* target can be OnDoc, OnLink, OnImg, OnMedia, OnEdit, OnBar, OnSel, OnAny */
 static Button buttons[] = {
 	/* target       event mask      button  function        argument        stop event */
-	{ OnLink,       0,              2,      clicknewwindow, { .i = 0 },     1 },
-	{ OnLink,       MODKEY,         2,      clicknewwindow, { .i = 1 },     1 },
-	{ OnLink,       MODKEY,         1,      clicknewwindow, { .i = 1 },     1 },
-	{ OnAny,        0,              8,      clicknavigate,  { .i = -1 },    1 },
-	{ OnAny,        0,              9,      clicknavigate,  { .i = +1 },    1 },
-	{ OnMedia,      MODKEY,         1,      clickexternplayer, { 0 },       1 },
+	{ OnLink,       0,              2,      clicknewwindow,      { .i = 0 },     1 },
+	{ OnLink,       MODKEY,         2,      clicknewwindow,      { .i = 1 },     1 },
+	{ OnLink,       MODKEY,         1,      clicknewwindow,      { .i = 1 },     1 },
+	{ OnAny,        0,              8,      clicknavigate,       { .i = -1 },    1 },
+	{ OnAny,        0,              9,      clicknavigate,       { .i = +1 },    1 },
+	{ OnMedia,      MODKEY,         1,      clickexternplayer,   { 0 },       1 },
 };
 
 #define HOMEPAGE "https://www.baidu.com/"
