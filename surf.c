@@ -231,10 +231,12 @@ static void scrollv(Client *c, const Arg *a);
 static void scrollh(Client *c, const Arg *a);
 static void navigate(Client *c, const Arg *a);
 static void stop(Client *c, const Arg *a);
+static void quit(Client *c, const Arg *a);
 static void toggle(Client *c, const Arg *a);
 static void togglefullscreen(Client *c, const Arg *a);
 static void togglecookiepolicy(Client *c, const Arg *a);
 static void toggleinspector(Client *c, const Arg *a);
+static void toggletitle(Client *c, const Arg *a);
 static void find(Client *c, const Arg *a);
 static void insert(Client *c, const Arg *a);
 
@@ -649,13 +651,19 @@ updatetitle(Client *c)
 		gettogglestats(c);
 		getpagestats(c);
 
-		if (c->progress != 100)
-			title = g_strdup_printf("[%i%%] %s:%s | %s",
-			        c->progress, togglestats, pagestats, name);
-		else
-			title = g_strdup_printf("%s:%s | %s",
-			        togglestats, pagestats, name);
-
+		if (c->progress != 100) {
+            if (!extendedtitle)
+                title = g_strdup_printf("[%i%%] %s", c->progress, name);
+            else
+			    title = g_strdup_printf("[%i%%] %s:%s | %s",
+						c->progress, togglestats, pagestats, name);
+        } else {
+            if (!extendedtitle)
+                title = g_strdup_printf("%s", name);
+            else
+			    title = g_strdup_printf("%s:%s | %s",
+						togglestats, pagestats, name);
+        }
 		gtk_window_set_title(GTK_WINDOW(c->win), title);
 		g_free(title);
 	} else {
@@ -1917,6 +1925,13 @@ stop(Client *c, const Arg *a)
 }
 
 void
+quit(Client *c, const Arg *a)
+{
+	cleanup();
+	exit(0);
+}
+
+void
 toggle(Client *c, const Arg *a)
 {
 	curconfig[a->i].val.i ^= 1;
@@ -1949,6 +1964,13 @@ toggleinspector(Client *c, const Arg *a)
 		webkit_web_inspector_close(c->inspector);
 	else if (curconfig[Inspector].val.i)
 		webkit_web_inspector_show(c->inspector);
+}
+
+void
+toggletitle(Client *c, const Arg *a)
+{
+	extendedtitle = !extendedtitle;
+	updatetitle(c);
 }
 
 void
@@ -2046,6 +2068,9 @@ main(int argc, char *argv[])
 	case 'e':
 		embed = strtol(EARGF(usage()), NULL, 0);
 		break;
+    case 'E':
+        extendedtitle = strtol(EARGF(usage()), NULL, 0);
+        break;
 	case 'f':
 		defconfig[RunInFullscreen].val.i = 0;
 		defconfig[RunInFullscreen].prio = 2;
