@@ -62,7 +62,18 @@ static int winsize[] = { 800, 600 };
 
 static WebKitFindOptions findopts = WEBKIT_FIND_OPTIONS_CASE_INSENSITIVE |
                                     WEBKIT_FIND_OPTIONS_WRAP_AROUND;
-
+static SearchEngine searchengines[] = {
+  { "gg",    "https://www.google.com/search?q=%s"  },
+  { "bd",    "https://www.baidu.com/s?ie=utf-8&f=3&rsv_bp=1&tn=baidu&wd=%s"  },
+  { "wp",    "https://en.wikipedia.org/w/index.php?search=%s"  },
+  { "wt",    "https://en.wiktionary.org/w/index.php?search=%s"  },
+  { "rd",    "https://www.reddit.com/search/?q=%s"  },
+  { "yt",    "https://www.youtube.com/results?search_query=%s"  },
+  { "wa",    "https://wiki.archlinux.org/index.php?search=%s"  },
+  { "gh",    "https://github.com/search?q=%s"  },
+  { "gl",    "https://gitlab.com/search?search=%s"  },
+  { "og",    "https://opensource.google/projects/search?q=%s"  },
+};
 #define PROMPT_GO   "Go:"
 #define PROMPT_FIND "Find:"
 
