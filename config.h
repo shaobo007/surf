@@ -86,12 +86,21 @@ static WebKitFindOptions findopts = WEBKIT_FIND_OPTIONS_CASE_INSENSITIVE |
 }
 
 /* DOWNLOAD(URI, referer) */
-#define DOWNLOAD(u, r) { \
-        .v = (const char *[]){ "st", "-e", "/bin/sh", "-c",\
-             "curl -g -L -J -O -A \"$1\" -b \"$2\" -c \"$2\"" \
-             " -e \"$3\" \"$4\"; read", \
-             "surf-download", useragent, cookiefile, r, u, NULL \
-        } \
+//#define DOWNLOAD(u, r) { \
+        //.v = (const char *[]){ "st", "-e", "/bin/sh", "-c",\
+             //"curl -g -L -J -O -A \"$1\" -b \"$2\" -c \"$2\"" \
+             //" -e \"$3\" \"$4\"; read", \
+             //"surf-download", useragent, cookiefile, r, u, NULL \
+        //} \
+//}
+#define DOWNLOAD(d, r) { \
+	.v = (char *[]){ "/bin/sh", "-c", \
+		"cd ~/Downloads;"\
+		"st -e /bin/sh -c \"aria2c -U '$1'" \
+		" --referer '$2' --load-cookies $3 --save-cookies $3 '$0';" \
+		" sleep 3;\"", \
+		d, useragent, r, cookiefile, NULL \
+	} \
 }
 
 /* PLUMB(URI) */
@@ -220,4 +229,4 @@ static Button buttons[] = {
 	{ OnMedia,      MODKEY,         1,      clickexternplayer,   { 0 },       1 },
 };
 
-#define HOMEPAGE "https://www.baidu.com/"
+#define HOMEPAGE "https://www.google.com/"
